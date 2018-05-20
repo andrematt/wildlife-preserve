@@ -5,6 +5,7 @@
  */
 
 
+//MOdifica i dati di sensor: aggiungi gate type!! oppure fai gruppo con CF
 
 //funct color
 //
@@ -89,6 +90,10 @@ function mapApp(){
     	}
 	}
 
+	function conditionalColoring(d){
+		console.log(d)
+	}
+
 		
 	
 	function me(selection){
@@ -99,18 +104,94 @@ function mapApp(){
 		
 		sensorData.then(function(values){
 			if (values) {
-				let shifted=values.shift();;
-				sensors=values; //rimuove la prima riga di intestazione
-				console.log(sensors)
-				console.log(selection); //la selection è il group passato 
+
+				/* Prepare data 		   
+				*/
+				let shifted=values.shift(); //rimuove la prima riga di intestazione
+				sensors=values; 
 				console.log("MapBase", selection.datum());	
-				let onlyNames=[""]; //offset per il primo valore
-				selection.datum().forEach(function (d){
-					onlyNames.push(d.fullname);
+				let sensorNames=[""]; //offset per il primo valore
+				selection.datum().forEach(function (d){  //la selection è #viz
+					sensorNames.push(d.fullname);
 				});
-				console.log(onlyNames);
-				let boundaries = selection.node().parentNode.getBoundingClientRect();
+
+
+				// Prepare data for Crossfilter
+ 		    	//
+ 		    	let crossings  = crossfilter(sensors);	
+      			id = crossings.dimension(function(d) { return d.id; }),
+      			ids = id.group(),
+      			type = crossings.dimension(function(d) {
+      				return d.type;
+      			});
+      			types = type.group();
+      			gate = crossings.dimension(function(d) {
+      				return d.gate;
+      			});
+      			gates = gate.group();
+				//raggruppamento di gate con nest      			
+      	
+
+				//DC chart for gate type
+				//
+				selection.append("span")
+				.attr("id","dc-gates-chart")
+				.attr("class", "svg-container-medium");
+
+				/*
+				let gatesChart = dc.barChart("#dc-gates-chart");
+ 			   	gatesChart.height(400)
+     			.margins({top: 10, right: 10, bottom: 20, left: 40})
+     			.dimension(gate)								// the values across the x axis
+     			.group(gates)							// the values on the y axis
+	 			.transitionDuration(500)
+     			.centerBar(true)
+     			.elasticY(true)
+     			.x(d3.scaleOrdinal().domain(sensorNames)) // Need empty val to offset first value
+				.xUnits(dc.units.ordinal)
+				//.xAxis().tickFormat(function(v) {return v;})
+	 			.label(function(d){
+	 				console.log(d);
+	 				return d.x;
+	 			});
+				*/
+
+      			let gatesChart = dc.rowChart("#dc-gates-chart");	        
+		        gatesChart.height(600)
+    			.margins({top: 10, right: 10, bottom: 20, left: 40})
+    			.dimension(gate)								// the values across the x axis
+    			.group(gates)
+   				//.ordinalColors(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628'])							// the values on the y axis
+				.ordinalColors(function(d){return '#e41a1c'; })
+				.transitionDuration(500)
+				.label(function (d){ 
+					return d.key;
+    			})
+    			.elasticX(true);
 				
+
+	 			
+
+
+				
+				/* Creation of the containing SVG element for the static minimap
+				*/	
+				let nodesDiv=selection.append("span")
+				.attr("id","nodes-chart")
+				.attr("class", "svg-container-small");
+
+				let containerWidth=nodesDiv.node().getBoundingClientRect().width; //takes the width of the responsive div
+
+				let nodeSelection=nodesDiv.append("svg")
+				.attr('height',350)
+				.attr('width', containerWidth);
+
+				let test=nodeSelection.node().parentNode.getBoundingClientRect();
+				
+				/* Map the coordinates to containing svg
+				*/
+				//let boundaries = nodeSelection.node().parentNode.getBoundingClientRect();
+				let boundaries = nodeSelection.node().getBoundingClientRect();
 				let maxX=d3.max(selection.datum(), function(d){return d.coord[0]});
 				let minX=d3.min(selection.datum(), function(d){return d.coord[0]});
 				let maxY=d3.max(selection.datum(), function(d){return d.coord[1]});
@@ -121,19 +202,18 @@ function mapApp(){
 
 				let yScale = yScalePoints(minY,maxY, boundaries.height);
 				let yMap = yScaleMap(minY,maxY, boundaries.height);
-				console.log(boundaries);
+		
 
-
-				// Draw the static map
-				//
-				let nodes=selection.selectAll("circle")
+				/* Draw the static minimap
+				*/
+				let nodes=nodeSelection.selectAll("circle")
 				.data(selection.datum());
 
 				nodes.enter()
 				.append("circle")
-				.attr("stroke", "black")
+				//.attr("stroke", "black")
 				.attr("fill", "silver")
-				.attr("r", 6)
+				.attr("r", 3)
 				.attr("cx", xMap)
     			.attr("cy", yMap)
     			.on("click", function(d){
@@ -158,77 +238,27 @@ function mapApp(){
          		.remove();	
  		    	})
 
- 		    	// Prepare data for Crossfilter
- 		    	//
- 		    	let crossings  = crossfilter(sensors);	
-      			id = crossings.dimension(function(d) { return d.id; }),
-      			ids = id.group(),
-      			type = crossings.dimension(function(d) {
-      				return d.type;
-      			});
-      			types = type.group();
-      			gate = crossings.dimension(function(d) {
-      				return d.gate;
-      			});
-      			gates = gate.group();
-
-
-      			
-      			//DC chart for vehicle type
+				//DC chart for vehicle type
       			//
+      			selection.append("span")
+				.attr("id","dc-vehicles-chart")
+				.attr("class", "svg-container-large");
+
+
       			let vehiclesChart = dc.rowChart("#dc-vehicles-chart");
-		        
-		        vehiclesChart.width(500)
-    			.elasticX(true)
-    			.height(600)
+		        vehiclesChart.elasticX(true)
+    			.height(300)
     			.margins({top: 10, right: 10, bottom: 20, left: 40})
     			.dimension(type)								// the values across the x axis
     			.group(types)
    				.ordinalColors(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628'])							// the values on the y axis
 				.transitionDuration(500)
 				.label(function (d){
-					//return d.key;
     	 			return formatVehicleType(d.key);
     			});	
 
-
-				/*
-    			//DC chart for gate type
-      			//
-      			let gatesChart = dc.rowChart("#dc-gates-chart");	        
-		        gatesChart.width(500)
-    			.height(600)
-    			.margins({top: 10, right: 10, bottom: 20, left: 40})
-    			.dimension(gate)								// the values across the x axis
-    			.group(gates)
-   				//.ordinalColors(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628'])							// the values on the y axis
-				.transitionDuration(500)
-				.label(function (d){
-    	 			return d.key;
-    			})
-    			.elasticX(true);
-				*/
-
-				//DC chart for gate type
-				//
-				let gatesChart = dc.barChart("#dc-gates-chart");
- 			   	gatesChart.width(850)
-     		    .height(600)
-     			.margins({top: 10, right: 10, bottom: 20, left: 40})
-     			.dimension(gate)								// the values across the x axis
-     			.group(gates)							// the values on the y axis
-	 			.transitionDuration(500)
-     			.centerBar(true)
-     			.elasticY(true)
-     			.x(d3.scaleOrdinal().domain(onlyNames)) // Need empty val to offset first value
-				.xUnits(dc.units.ordinal)
-				//.xAxis().tickFormat(function(v) {return v;})
-	 			.label(function(d){
-	 				console.log(d);
-	 				return d.x;
-	 			});
-
-	 			dc.renderAll();
+				dc.renderAll();
+ 		    	
     		};
 		})
 

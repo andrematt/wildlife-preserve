@@ -7,6 +7,36 @@
 }
 */
 
+
+/* Cool responsive SVG
+*/
+.svg-container-large {
+    display: inline-block;
+    position: relative;
+    width: 100%;
+    padding-bottom: 10%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+
+.svg-container-medium {
+    display: inline-block;
+    position: relative;
+    width: 65%;
+    padding-bottom: 10%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+
+.svg-container-small {
+    display: inline-block;
+    position: relative;
+    width: 35%;
+    padding-bottom: 10%; /* aspect ratio */
+    vertical-align: top;
+    overflow: hidden;
+}
+
 .wrapper {
   display: grid;
   grid-template-columns: repeat(12, [col-start] 1fr);

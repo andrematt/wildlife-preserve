@@ -14,12 +14,13 @@ function app(){
 
 		console.log('selction',selection.node());
 
+		/*
 		// Creation of the containing SVG element for the map
 		//
 		svg = selection.append("svg")
 			.attr('height',500)
 			.attr('width',"100%");
-
+		*/
 		
 		// Loading geographical data
 		//
@@ -79,10 +80,17 @@ function app(){
 
 			console.log(points);
 
+
+			/*
 			let gReports = svg.append("g")
 				.attr("class","reports")
 				.datum(points)
 				.call(map);
+			*/
+			let gReports = selection
+				.datum(points)
+				.call(map);
+
 		}
 		else {
 			throw new Error("error fetching data!");
