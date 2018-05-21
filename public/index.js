@@ -91,6 +91,12 @@ function app(){
 				.datum(points)
 				.call(map);
 
+			//dopo puoi rifare selectAll etc..
+
+			//component 2
+			//datum=crossfilterData
+			//.call(component)
+
 		}
 		else {
 			throw new Error("error fetching data!");

@@ -4,15 +4,8 @@
  *  This module will display a map with a symbol encoding for a set of geographical elements
  */
 
+//.reverse!
 
-//MOdifica i dati di sensor: aggiungi gate type!! oppure fai gruppo con CF
-
-//funct color
-//
-/*
-if point.name==....
-colorPoint(point.name)
-*/
 
 function mapApp(){
 	const padding=80;
@@ -45,7 +38,7 @@ function mapApp(){
 		return yMap;
 	}
 
-	function parseVehicleType(d){
+	function parseVehicleType(d){ //invece degli if mappa domain e range
 		if (d.vehicleType=="1"){
       		return 0;
       	}
@@ -64,6 +57,35 @@ function mapApp(){
       	else if (d.vehicleType=="5"){
       		return 5;
       	}
+	}
+
+	function checkNameStart(d){
+		if(d.startsWith('ga')){
+			return 'gate';
+		}
+		else if(d.startsWith('ge')){
+			return 'general-gate';
+		}
+		else if(d.startsWith('ca')){
+			return 'camping';
+		}
+		else if(d.startsWith('ent')){
+			return 'entering';
+		}
+		else if(d.startsWith('ge')){
+			return 'general-gate';
+		}
+		else if(d.startsWith('ranger-b')){
+			return 'ranger-base';
+		}
+		else if(d.startsWith('ranger-s')){
+			return 'ranger-stop';
+		}
+		
+		
+		
+
+
 	}
 
 	function formatVehicleType(d){
@@ -105,32 +127,40 @@ function mapApp(){
 		sensorData.then(function(values){
 			if (values) {
 
-				/* Prepare data 		   
+				/* Prepare data fetched from server 		   
 				*/
-				let shifted=values.shift(); //rimuove la prima riga di intestazione
+				let shifted=values.shift(); // Just remove heading
 				sensors=values; 
+
+				/* Prepare data received via Selection 		   
+				*/
 				console.log("MapBase", selection.datum());	
 				let sensorNames=[""]; //offset per il primo valore
-				selection.datum().forEach(function (d){  //la selection è #viz
+				selection.datum().forEach(function (d){ 
 					sensorNames.push(d.fullname);
 				});
+				console.log(sensorNames);
 
 
-				// Prepare data for Crossfilter
+				// Crossfilter grouping
  		    	//
  		    	let crossings  = crossfilter(sensors);	
       			id = crossings.dimension(function(d) { return d.id; }),
       			ids = id.group(),
-      			type = crossings.dimension(function(d) {
+      			vehicleType = crossings.dimension(function(d) {
       				return d.type;
       			});
-      			types = type.group();
+      			vehicleTypes = vehicleType.group();
       			gate = crossings.dimension(function(d) {
       				return d.gate;
       			});
       			gates = gate.group();
-				//raggruppamento di gate con nest      			
-      	
+      			
+      			gateType=crossings.dimension(function(d){
+      				let nameInitial=checkNameStart(d.gate);
+      				return nameInitial;
+      			}); //raggruppamento di gate con nest      			
+      			gateTypes=gateType.group();
 
 				//DC chart for gate type
 				//
@@ -159,10 +189,10 @@ function mapApp(){
       			let gatesChart = dc.rowChart("#dc-gates-chart");	        
 		        gatesChart.height(600)
     			.margins({top: 10, right: 10, bottom: 20, left: 40})
-    			.dimension(gate)								// the values across the x axis
-    			.group(gates)
-   				//.ordinalColors(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628'])							// the values on the y axis
-				.ordinalColors(function(d){return '#e41a1c'; })
+    			.dimension(gateType)								// the values across the x axis
+    			.group(gateTypes)
+   				.ordinalColors(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628'])							// the values on the y axis
+				//.ordinalColors(function(d){return '#e41a1c'; })
 				.transitionDuration(500)
 				.label(function (d){ 
 					return d.key;
@@ -249,8 +279,8 @@ function mapApp(){
 		        vehiclesChart.elasticX(true)
     			.height(300)
     			.margins({top: 10, right: 10, bottom: 20, left: 40})
-    			.dimension(type)								// the values across the x axis
-    			.group(types)
+    			.dimension(vehicleType)								// the values across the x axis
+    			.group(vehicleTypes)
    				.ordinalColors(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628'])							// the values on the y axis
 				.transitionDuration(500)
 				.label(function (d){
