@@ -9,93 +9,46 @@ function app(){
 	let svg;
 	let mappedData=[];
 	let map=mapApp();
-
+	let charts=chartsApp();
+	
 	function me(selection){
 
 		console.log('selction',selection.node());
 
-		/*
-		// Creation of the containing SVG element for the map
-		//
-		svg = selection.append("svg")
-			.attr('height',500)
-			.attr('width',"100%");
-		*/
-		
-		// Loading geographical data
+		// Loading local and remote data
 		//
 		let points=[];
+		let pointNames=[];
+		let sensors;	
 		const urlPoints="data/points.csv"
+		const urlSensor = 'http://localhost:3000/sensors/';
 		let pointData=fetch(urlPoints).then((resp) => resp.json());
-		pointData.then(function(values){
-		if (values) {
-			values.forEach(function(val){
+		let sensorData=fetch(urlSensor).then((resp) => resp.json());
+		Promise.all([sensorData,pointData]).then(function(values){
+		if (values[0]&&values[1]) {
+			sensors=values[0]; 
+			// Prepare data fetched from local
+			values[1].forEach(function(val){
 				points.push(val);
 			});
 
-
 			/*
-			//Map coordinates to names
-			//
-			function getX(search){
-				//console.log(points[0].coord[0]);
-				let result;
-				points.forEach(function(d){
-					if (d.fullname==search){
-						result=d.coord[0];
-					}
-				});
-				return result;
-			}
-
-			function getY(search){
-				//console.log(points[0].coord[0]);
-				let result;
-				points.forEach(function(d){
-					if (d.fullname==search){
-						result=d.coord[1];
-					}
-				});
-				return result;
-			}
-
-			mappedData = sensors.map(function (data){
-				//console.log(data);
-				temp={};
-				temp.type= data.type;
-				temp.timestamp=data.timestamp;
-				temp.id=data.id;
-				temp.gate=data.gate;
-				temp.x=getX(temp.gate);
-				temp.y=getY(temp.gate);
-				return temp;
-			});			
-
-			
-			let dataArr=[];
-			dataArr.push(points);
-			let shifted=mappedData.shift();
-			dataArr.push(mappedData);
-			*/
-
-			console.log(points);
-
-
-			/*
-			let gReports = svg.append("g")
+			let firstComponent = svg.append("g")
 				.attr("class","reports")
 				.datum(points)
 				.call(map);
 			*/
-			let gReports = selection
+
+			
+			let staticViz = selection
 				.datum(points)
 				.call(map);
+			
+			let dinamicGraphs = selection //come passo la possibilità di cambiare?
+				.datum(sensors)
+				.call(charts);
 
 			//dopo puoi rifare selectAll etc..
-
-			//component 2
-			//datum=crossfilterData
-			//.call(component)
 
 		}
 		else {
