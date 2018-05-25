@@ -10,39 +10,52 @@
 
 /* Cool responsive SVG
 */
-.svg-container-large {
+.svg-container-small {
+      border:1px solid black;
+    border-radius:5px;
     display: inline-block;
+    border-radius:5px;
     position: relative;
-    width: 100%;
-    padding-bottom: 10%; /* aspect ratio */
+    width: 35%;
+     padding-top: 15px;
+    padding-bottom: 15px; /* aspect ratio */ 
     vertical-align: top;
     overflow: hidden;
 }
 
 .svg-container-half {
+    border:1px solid black;
+    border-radius:5px;
     display: inline-block;
     position: relative;
     width: 50%;
-    padding-bottom: 10%; /* aspect ratio */
+    padding-top: 15px;
+    padding-bottom: 15px; /* aspect ratio */
     vertical-align: top;
     overflow: hidden;
 }
 
 
 .svg-container-medium {
+    border:1px solid black;
+    border-radius:5px;
     display: inline-block;
     position: relative;
     width: 65%;
-    padding-bottom: 10%; /* aspect ratio */
+     padding-top: 15px;
+    padding-bottom: 15px; /* aspect ratio */
     vertical-align: top;
     overflow: hidden;
 }
 
-.svg-container-small {
+.svg-container-large {
+    border:1px solid black;
+    border-radius:5px;
     display: inline-block;
     position: relative;
-    width: 35%;
-    padding-bottom: 10%; /* aspect ratio */
+    width: 100%;
+     padding-top: 15px;
+    padding-bottom: 15px; /* aspect ratio */
     vertical-align: top;
     overflow: hidden;
 }
@@ -102,6 +115,10 @@
   grid-row: 13/15 ;
 }
 
+#viz{
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
 
 #path-charts{
   grid-column: col-start 2/ span 10;

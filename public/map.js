@@ -37,12 +37,9 @@ function mapApp(){
 		let yMap = function (d){return yScale(d.coord[1])};
 		return yMap;
 	}
-
-		
+	
 		
 	function me(selection){
-
-	
 				
 				/* Creation of the containing SVG element for the static minimap
 				*/	
@@ -53,7 +50,7 @@ function mapApp(){
 				let textDiv=selection.append("span")
 				.attr("id","nodes-chart-info")
 				.attr("class", "svg-container-half")
-				.html("<h3>blablablablab</h3>  explaination of map");
+				.html("<h3>Map points</h3>  <p> - Camping </p> <p> - Entrance </p> <p> - Gate </p> <p> - General gate </p> <p> - Ranger base </p> <p> - Ranger stop </p>");
 
 				let containerWidth=nodesDiv.node().getBoundingClientRect().width; //takes the width of the responsive div
 
@@ -87,7 +84,26 @@ function mapApp(){
 				nodes.enter()
 				.append("circle")
 				//.attr("stroke", "black")
-				.attr("fill", "silver")
+				.attr("fill", function(d){
+					if(d.type==='ranger-stop'){
+						return ("yellow");
+					}
+					else if (d.type==='entrance'){
+						return ("green");
+					}
+					else if(d.type==='general-gate'){
+						return("cyan");
+					}
+					else if(d.type==='gate'){
+						return("red");
+					}
+					else if(d.type==='camping'){
+						return ("orange");
+					}
+					else if(d.type==='ranger-base'){
+						return ("purple");
+					}
+				})
 				.attr("r", 3)
 				.attr("cx", xMap)
     			.attr("cy", yMap)

@@ -31,7 +31,6 @@ function app(){
 			values[1].forEach(function(val){
 				points.push(val);
 			});
-
 			/*
 			let firstComponent = svg.append("g")
 				.attr("class","reports")

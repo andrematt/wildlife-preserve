@@ -9,6 +9,8 @@
 
 function chartsApp(){
 	const padding=80;
+	const sensorNames=["","camping0","camping1","camping2","camping3","camping4","camping5","camping6","camping7","camping8","entrance0","entrance1","entrance2","entrance3","entrance4","gate0" ,"gate1" ,"gate2", "gate3","gate4","gate5","gate6","gate7","gate8","general-gate0","general-gate1","general-gate2","general-gate3","general-gate4","general-gate5","general-gate6","general-gate7", "ranger-base","ranger-stop0","ranger-stop1","ranger-stop2","ranger-stop3","ranger-stop4","ranger-stop5","ranger-stop6","ranger-stop7"];
+
 	// Utils functions
 	// 
 	function parseVehicleType(d){ //invece degli if mappa domain e range
@@ -127,11 +129,13 @@ function chartsApp(){
 				//
 				selection.append("span")
 				.attr("id","dc-gates-chart")
-				.attr("class", "svg-container-medium");
+				.attr("class", "svg-container-large");
 
 
-				//ARGH manca sensornames!!
-				
+
+				console.log(sensorNames);
+				// DC chart for single gates
+				//
 				let gatesChart = dc.barChart("#dc-gates-chart");
  			   	gatesChart.height(600)
      			.margins({top: 10, right: 10, bottom: 20, left: 40})
@@ -140,15 +144,42 @@ function chartsApp(){
 	 			.transitionDuration(500)
      			.centerBar(true)	
      			.elasticY(true)
+     			.colorAccessor(function(d){
+     				let name=checkNameStart(d.key);
+     				console.log(name);
+     				if(name==='ranger-stop'){
+						return ("yellow");
+					}
+					else if (name==='entrance'){
+						return ("green");
+					}
+					else if(name==='general-gate'){
+						return("cyan");
+					}
+					else if(name==='gate'){
+						return("red");
+					}
+					else if(name==='camping'){
+						return ("orange");
+					}
+					else if(name==='ranger-base'){
+						return ("purple");
+					}
+     				//return '#984ea3';
+     			})
      			.x(d3.scaleOrdinal().domain(sensorNames)) // Need empty val to offset first value
 				.xUnits(dc.units.ordinal)
 				//.xAxis().tickFormat(function(v) {return v;})
 	 			.label(function(d){
+	 				console.log(d);
 	 				return d.x;
+
 	 			});
 				
 
-				/*
+	 			/*
+				// DC chart for gates grouped by type
+				//
       			let gatesChart = dc.rowChart("#dc-gates-chart");	        
 		        gatesChart.height(600)
     			.margins({top: 10, right: 10, bottom: 20, left: 40})
