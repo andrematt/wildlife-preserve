@@ -1,6 +1,6 @@
 
 /**
- *
+ *  Spostare tutto qua, fare leggere anche la mappa da questo component, renderla dinamica (ingrandire i gates selezionati)
  *  This module will display a map with a symbol encoding for a set of geographical elements
  */
 
@@ -95,19 +95,24 @@ function chartsApp(){
 	
 	function me(selection){
 
-		let sensors;	
 		let urlSensor = 'http://localhost:3000/sensors/';
 		let sensorData=fetch(urlSensor).then((resp) => resp.json());
 		
 				let values=selection.datum();
 				/* Prepare data fetched from server 		   
 				*/
-				let shifted=values.shift(); // Just remove heading
-				sensors=values; 
+				values.shift(); // Just remove heading
+				var dtgFormat = d3.timeFormat("%Y-%m-%dT%H:%M:%S");
+  				//values.forEach(function(d) { 
+  				//  d.dtg   = dtgFormat.parse(d.timestamp); 
+  				// });
+				
+
+			
 
 				// Crossfilter grouping
  		    	//
- 		    	let crossings  = crossfilter(sensors);	
+ 		    	let crossings  = crossfilter(values);	
       			id = crossings.dimension(function(d) { return d.id; }),
       			ids = id.group(),
       			vehicleType = crossings.dimension(function(d) {
@@ -125,56 +130,60 @@ function chartsApp(){
       			}); //raggruppamento di gate con nest      			
       			gateTypes=gateType.group();
 
-				//DC chart for gate type
-				//
-				selection.append("span")
-				.attr("id","dc-gates-chart")
-				.attr("class", "svg-container-large");
+				
+			
 
 
 
-				console.log(sensorNames);
+
 				// DC chart for single gates
 				//
+				let gatesContainer=selection.append("span")
+				.attr("id","dc-gates-chart")
+				.attr("class", "svg-container-large")
+				.html("<h4>Gates chart</h4>");
+
 				let gatesChart = dc.barChart("#dc-gates-chart");
- 			   	gatesChart.height(600)
+ 			   	gatesChart.height(300)
      			.margins({top: 10, right: 10, bottom: 20, left: 40})
      			.dimension(gate)								// the values across the x axis
      			.group(gates)							// the values on the y axis
 	 			.transitionDuration(500)
      			.centerBar(true)	
      			.elasticY(true)
-     			.colorAccessor(function(d){
+     			.ordinalColors(['orange','green','red', 'cyan', 'purple', 'yellow'])
+     			.colorAccessor(function(d){ 
      				let name=checkNameStart(d.key);
-     				console.log(name);
      				if(name==='ranger-stop'){
-						return ("yellow");
+						return ("a");
 					}
 					else if (name==='entrance'){
-						return ("green");
+						return ("b");
 					}
 					else if(name==='general-gate'){
-						return("cyan");
+						return("c");
 					}
 					else if(name==='gate'){
-						return("red");
+						return("d");
 					}
 					else if(name==='camping'){
-						return ("orange");
+						return ("e");
 					}
 					else if(name==='ranger-base'){
-						return ("purple");
+						return ("f");
 					}
-     				//return '#984ea3';
      			})
      			.x(d3.scaleOrdinal().domain(sensorNames)) // Need empty val to offset first value
 				.xUnits(dc.units.ordinal)
-				//.xAxis().tickFormat(function(v) {return v;})
-	 			.label(function(d){
-	 				console.log(d);
-	 				return d.x;
-
-	 			});
+				.xAxis()
+				.tickFormat(function(v) {
+					return ("");
+				})
+				
+	 			
+	 			//.label(function(d){
+	 			//	return d.x;
+	 			//});
 				
 
 	 			/*
@@ -197,10 +206,10 @@ function chartsApp(){
 
 				//DC chart for vehicle type
       			//
-      			selection.append("span")
+      			let vehiclesContainer=selection.append("span")
 				.attr("id","dc-vehicles-chart")
-				.attr("class", "svg-container-large");
-
+				.attr("class", "svg-container-large")
+				.html("<h4>Vehicles chart</h4>");
 
       			let vehiclesChart = dc.rowChart("#dc-vehicles-chart");
 		        vehiclesChart.elasticX(true)
@@ -208,7 +217,7 @@ function chartsApp(){
     			.margins({top: 10, right: 10, bottom: 20, left: 40})
     			.dimension(vehicleType)								// the values across the x axis
     			.group(vehicleTypes)
-   				.ordinalColors(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628'])							// the values on the y axis
+   				.linearColors(['darkblue'])							// the values on the y axis
 				.transitionDuration(500)
 				.label(function (d){
     	 			return formatVehicleType(d.key);

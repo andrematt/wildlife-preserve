@@ -1,8 +1,20 @@
 /*
+slide eventi: eventi generati dal dom (es onclick..), per far reagire la pagina servono dei listener: es .text(function(d))... d = data embedded in button*
 a) buttare tutto dentro map, compresa la parte di ottenere i dati dal server
 b) fare diversi component (ma come li faccio comunicare? alla onclick in map deve succedere qualcosa in stat)
 c) faccio un unico component, ma prendo i dati da index.js e li passo insieme (come?)
-*/
+d3 dispach: compoennt non visibile, specie di broadcaster per events (ma non hanno data). registri un nuovo evento con nome, funzione eseguita. Il bottone è attivo se la stringa mandata da function è uguale a .classed...d=""
+server per attaccare più function(d).. ad un singolo event(changerecordType). Aggiungi un namespace (.map .chart) per specificare subfamily di eventi
+ 
+
+stateful descriptor: state, es year e recordtype selezionati. Nella nostra app lo state è tenuto da crossfilter.
+ 
+pan e zoom: si fanno muovendo l'elemento g che racchiude gli elementi con traslate
+
+brush: clicca e trascina per fare selection
+
+ */
+
 
 function app(){
 
@@ -43,11 +55,12 @@ function app(){
 				.datum(points)
 				.call(map);
 			
+			//mettere switch per far vedere components singoli sensor o path!
 			let dinamicGraphs = selection //come passo la possibilità di cambiare?
 				.datum(sensors)
 				.call(charts);
 
-			//dopo puoi rifare selectAll etc..
+	
 
 		}
 		else {

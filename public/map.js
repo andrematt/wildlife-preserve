@@ -42,10 +42,11 @@ function mapApp(){
 	function me(selection){
 				
 				/* Creation of the containing SVG element for the static minimap
-				*/	
+				*/
+
 				let nodesDiv=selection.append("span")
 				.attr("id","nodes-chart")
-				.attr("class", "svg-container-half");
+				.attr("class", "svg-container-half")
 
 				let textDiv=selection.append("span")
 				.attr("id","nodes-chart-info")
