@@ -102,13 +102,15 @@ function chartsApp(){
 				/* Prepare data fetched from server 		   
 				*/
 				values.shift(); // Just remove heading
-				var dtgFormat = d3.timeFormat("%Y-%m-%dT%H:%M:%S");
-  				//values.forEach(function(d) { 
-  				//  d.dtg   = dtgFormat.parse(d.timestamp); 
-  				// });
-				
-
-			
+				let parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S"); //set dateTime format
+				let parseYear=d3.timeParse("%Y");
+ 				console.log(parseDate('2015-5-1 0:43:28'));
+ 				chiappe=parseDate('2015-5-1 0:43:28');
+ 				var month = chiappe.getDay();
+ 				console.log(month);
+ 				console.log(chiappe.getMonth());
+ 				//console.log(d3.timeMonth(parseDate('2015-5-1 0:43:28'));
+				//provare a estrarre e parsare solo i lmese?
 
 				// Crossfilter grouping
  		    	//
@@ -130,11 +132,36 @@ function chartsApp(){
       			}); //raggruppamento di gate con nest      			
       			gateTypes=gateType.group();
 
-				
-			
+				 // month dimenstion and group
+  				let volumeByMonth = crossings.dimension(function(d) {
+    				return d3.timeMonth(parseDate(d.timestamp));
+  				});
 
+  				// map/reduce to group sum
+  				let volumeByMonthGroup = volumeByMonth.group()
+    			.reduceCount(function(d) { return parseDate(d.timestamp); });	
 
+				 // week dimenstion and group
+  				let volumeByWeek = crossings.dimension(function(d) {
+    				return d3.timeWeek(parseDate(d.timestamp));
+  				});
 
+  				// map/reduce to group sum
+  				let volumeByWeekGroup = volumeByWeek.group()
+    			.reduceCount(function(d) { return parseDate(d.timestamp); });	
+
+    			 // Group data by week day
+  				let volumeByDay = crossings.dimension(function(d) {
+ 					let parsedDate = d3.timeDay(parseDate(d.timestamp));
+    				return parsedDate.getDay();
+  				});
+
+  				// map/reduce to group sum (how much traffic on each mondays, thuesdays...)
+  				let volumeByDayGroup = volumeByDay.group()
+    			.reduceCount(function(d) { return (parseDate(d.timestamp)); });
+    			
+
+    			
 
 				// DC chart for single gates
 				//
@@ -143,6 +170,22 @@ function chartsApp(){
 				.attr("class", "svg-container-large")
 				.html("<h4>Gates chart</h4>");
 
+				/*
+				// Alternate chart for gates grouped by type... quite ugly!
+				//
+      			let gatesChart = dc.rowChart("#dc-gates-chart");	        
+		        gatesChart.height(600)
+    			.margins({top: 10, right: 10, bottom: 20, left: 40})
+    			.dimension(gateType)								// the values across the x axis
+    			.group(gateTypes)
+   				.ordinalColors(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628'])							// the values on the y axis
+				//.ordinalColors(function(d){return '#e41a1c'; })
+				.transitionDuration(500)
+				.label(function (d){ 
+					return d.key;
+    			})
+    			.elasticX(true);
+				*/		
 				let gatesChart = dc.barChart("#dc-gates-chart");
  			   	gatesChart.height(300)
      			.margins({top: 10, right: 10, bottom: 20, left: 40})
@@ -179,31 +222,14 @@ function chartsApp(){
 				.tickFormat(function(v) {
 					return ("");
 				})
-				
-	 			
+			
 	 			//.label(function(d){
 	 			//	return d.x;
 	 			//});
 				
 
-	 			/*
-				// DC chart for gates grouped by type
-				//
-      			let gatesChart = dc.rowChart("#dc-gates-chart");	        
-		        gatesChart.height(600)
-    			.margins({top: 10, right: 10, bottom: 20, left: 40})
-    			.dimension(gateType)								// the values across the x axis
-    			.group(gateTypes)
-   				.ordinalColors(['#e41a1c','#377eb8','#4daf4a','#984ea3','#ff7f00','#ffff33','#a65628'])							// the values on the y axis
-				//.ordinalColors(function(d){return '#e41a1c'; })
-				.transitionDuration(500)
-				.label(function (d){ 
-					return d.key;
-    			})
-    			.elasticX(true);
-				*/	 			
-
-
+	 			
+			
 				//DC chart for vehicle type
       			//
       			let vehiclesContainer=selection.append("span")
@@ -211,6 +237,7 @@ function chartsApp(){
 				.attr("class", "svg-container-large")
 				.html("<h4>Vehicles chart</h4>");
 
+				
       			let vehiclesChart = dc.rowChart("#dc-vehicles-chart");
 		        vehiclesChart.elasticX(true)
     			.height(300)
@@ -222,7 +249,58 @@ function chartsApp(){
 				.label(function (d){
     	 			return formatVehicleType(d.key);
     			});	
+				
+				
+				
+    			//DC chart for weekdays
+    			//
+    			let timedataContainer=selection.append("span")
+				.attr("id","dc-timeline-chart")
+				.attr("class", "svg-container-large")
+				.html("<h4>Timeline chart</h4>");
 
+				try {
+				
+				let timelineChart = dc.lineChart("#dc-timeline-chart");
+  				 timelineChart.height(300)
+    			.margins({top: 10, right: 10, bottom: 20, left: 40})
+    			.dimension(volumeByDay)								// the values across the x axis
+   				.group(volumeByDayGroup)
+   				.elasticX(true)
+   				.elasticY(true)
+   				.x(d3.scaleTime().domain([0,1,2,3,4,5,6])) //good
+   				.x(d3.scaleTime().range(["mon","tues","weds","thrus","friday","saturn","sun"])) 
+   				//.x(d3.scaleTime().domain([parseYear('2015'), parseYear('2016')])); //works
+   				//.x(d3.scaleTime().range([parseDate('2015-5-1 0:43:28'), parseDate('2016-5-31 23:56:6')])) // scale and domain of the graph
+   				//.x(d3.scaleTime().domain([parseYear('2015'), parseYear('2016')])); //works
+   				//.xUnits(d3.timeYears); //does not work
+   				}
+   				catch(e){
+   					console.log(e);
+   				}
+
+
+   				//Alternate DC chart for complete timespan view
+
+
+    			/*
+   				.linearColors(['darkblue'])							// the values on the y axis
+				.transitionDuration(500)
+				.label(function (d){
+    	 			return formatVehicleType(d.key);
+    			});
+    			*/	
+  				
+  				/*
+  				timelineChart.width(960)
+    			.height(100)
+    			.margins({top: 10, right: 10, bottom: 20, left: 40})
+    			.dimension(dateTime)
+    			.group(dates);
+				//.x(d3.scaleTime().domain([parseDate('2015-5-1 0:43:28'), parseDate('2016-5-31 23:56:6')])) // scale and domain of the graph
+    			//.xAxis();
+					
+				*/
 				dc.renderAll();
  		    	
     		};

@@ -1,4 +1,15 @@
 /*
+
+REFACTORING
+parte 1
+che cosa:
+overview generale con mappa, paths e tabella riassuntiva (es avg e max path lenghth + id e data inizio e fine, tutti i diversi veicoli...)
+
+parte 2
+chi, dove, quando
+
+
+
 slide eventi: eventi generati dal dom (es onclick..), per far reagire la pagina servono dei listener: es .text(function(d))... d = data embedded in button*
 a) buttare tutto dentro map, compresa la parte di ottenere i dati dal server
 b) fare diversi component (ma come li faccio comunicare? alla onclick in map deve succedere qualcosa in stat)
