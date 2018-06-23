@@ -33,6 +33,10 @@ function app(){
 	let mappedData=[];
 	let map=mapApp();
 	let charts=chartsApp();
+
+    // Dom manipulation functions
+	//
+	
 	
 	function me(selection){
 

@@ -1,15 +1,30 @@
 
 /**
- *  Spostare tutto qua, fare leggere anche la mappa da questo component, renderla dinamica (ingrandire i gates selezionati)
- *  This module will display a map with a symbol encoding for a set of geographical elements
+ *  TODO: aggiungere un dato all'inizio e alla fine del raggruppamento per giorno, e all'array di giorni così da centrale la viz
+ *  
  */
 
 //.reverse!
+let showTotal=true;
+
+function toggleTotal(){
+
+		
+  $("#dc-timeline-chart-daily").attr("style", "display: none");
+  $("#dc-timeline-chart-full").attr("style", "display: block");
+	}
+
+function toggleDaily(){
+
+		$("#dc-timeline-chart-full").attr("style", "display: none");
+		$("#dc-timeline-chart-daily").attr("style", "display: block");
+	}
 
 
 function chartsApp(){
 	const padding=80;
 	const sensorNames=["","camping0","camping1","camping2","camping3","camping4","camping5","camping6","camping7","camping8","entrance0","entrance1","entrance2","entrance3","entrance4","gate0" ,"gate1" ,"gate2", "gate3","gate4","gate5","gate6","gate7","gate8","general-gate0","general-gate1","general-gate2","general-gate3","general-gate4","general-gate5","general-gate6","general-gate7", "ranger-base","ranger-stop0","ranger-stop1","ranger-stop2","ranger-stop3","ranger-stop4","ranger-stop5","ranger-stop6","ranger-stop7"];
+	const days = ["monday","thuesdays","wednesday","thursday","friday","saturnday","sunday"];
 
 	// Utils functions
 	// 
@@ -58,9 +73,6 @@ function chartsApp(){
 		}
 		
 		
-		
-
-
 	}
 
 	function formatVehicleType(d){
@@ -87,6 +99,7 @@ function chartsApp(){
     	}
 	}
 
+
 	function conditionalColoring(d){
 		console.log(d)
 	}
@@ -94,6 +107,7 @@ function chartsApp(){
 		
 	
 	function me(selection){
+		
 
 		let urlSensor = 'http://localhost:3000/sensors/';
 		let sensorData=fetch(urlSensor).then((resp) => resp.json());
@@ -103,43 +117,33 @@ function chartsApp(){
 				*/
 				values.shift(); // Just remove heading
 				let parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S"); //set dateTime format
-				let parseYear=d3.timeParse("%Y");
- 				console.log(parseDate('2015-5-1 0:43:28'));
- 				chiappe=parseDate('2015-5-1 0:43:28');
- 				var month = chiappe.getDay();
- 				console.log(month);
- 				console.log(chiappe.getMonth());
- 				//console.log(d3.timeMonth(parseDate('2015-5-1 0:43:28'));
-				//provare a estrarre e parsare solo i lmese?
 
-				// Crossfilter grouping
+				// Crossfilter dimentioning and grouping
  		    	//
  		    	let crossings  = crossfilter(values);	
+		   			
+ 		    	// id dimention and group
       			id = crossings.dimension(function(d) { return d.id; }),
       			ids = id.group(),
+      			
+      			//vehicle type dimention and group
       			vehicleType = crossings.dimension(function(d) {
       				return d.type;
       			});
       			vehicleTypes = vehicleType.group();
+
+      			//gate dimention and group
       			gate = crossings.dimension(function(d) {
       				return d.gate;
       			});
       			gates = gate.group();
-      			
+
+      			//gates grouped by type, basing on the first part of name
       			gateType=crossings.dimension(function(d){
       				let nameInitial=checkNameStart(d.gate);
       				return nameInitial;
-      			}); //raggruppamento di gate con nest      			
+      			});       			
       			gateTypes=gateType.group();
-
-				 // month dimenstion and group
-  				let volumeByMonth = crossings.dimension(function(d) {
-    				return d3.timeMonth(parseDate(d.timestamp));
-  				});
-
-  				// map/reduce to group sum
-  				let volumeByMonthGroup = volumeByMonth.group()
-    			.reduceCount(function(d) { return parseDate(d.timestamp); });	
 
 				 // week dimenstion and group
   				let volumeByWeek = crossings.dimension(function(d) {
@@ -156,12 +160,12 @@ function chartsApp(){
     				return parsedDate.getDay();
   				});
 
+
   				// map/reduce to group sum (how much traffic on each mondays, thuesdays...)
   				let volumeByDayGroup = volumeByDay.group()
     			.reduceCount(function(d) { return (parseDate(d.timestamp)); });
     			
 
-    			
 
 				// DC chart for single gates
 				//
@@ -229,7 +233,7 @@ function chartsApp(){
 				
 
 	 			
-			
+							
 				//DC chart for vehicle type
       			//
       			let vehiclesContainer=selection.append("span")
@@ -252,56 +256,46 @@ function chartsApp(){
 				
 				
 				
-    			//DC chart for weekdays
+    			//Container for full timeline and grouped by day timeline
     			//
-    			let timedataContainer=selection.append("span")
-				.attr("id","dc-timeline-chart")
-				.attr("class", "svg-container-large")
-				.html("<h4>Timeline chart</h4>");
+    			let timedataContainer=selection.append("div")
+				.attr("id","dc-timeline-chart-container")
+				.attr("class", "svg-container-large") //appends container div for full and daily charts
+				.html("<h4>Timeline chart</h4><button onclick=toggleTotal()>global view</button><button onclick=toggleDaily()>daily view</button><div class='chart svg-container-large' id='dc-timeline-chart-full'></div><div class='chart svg-container-large' id='dc-timeline-chart-daily' style='display:block'></div>");
+								
 
-				try {
-				
-				let timelineChart = dc.lineChart("#dc-timeline-chart");
-  				 timelineChart.height(300)
+				let timelineChartFull = dc.lineChart("#dc-timeline-chart-full");
+  				 timelineChartFull.height(300)
     			.margins({top: 10, right: 10, bottom: 20, left: 40})
-    			.dimension(volumeByDay)								// the values across the x axis
-   				.group(volumeByDayGroup)
+    			.dimension(volumeByWeek)		
+					// the values across the x axis
+   				.group(volumeByWeekGroup)
    				.elasticX(true)
    				.elasticY(true)
-   				.x(d3.scaleTime().domain([0,1,2,3,4,5,6])) //good
-   				.x(d3.scaleTime().range(["mon","tues","weds","thrus","friday","saturn","sun"])) 
-   				//.x(d3.scaleTime().domain([parseYear('2015'), parseYear('2016')])); //works
-   				//.x(d3.scaleTime().range([parseDate('2015-5-1 0:43:28'), parseDate('2016-5-31 23:56:6')])) // scale and domain of the graph
-   				//.x(d3.scaleTime().domain([parseYear('2015'), parseYear('2016')])); //works
-   				//.xUnits(d3.timeYears); //does not work
-   				}
-   				catch(e){
-   					console.log(e);
-   				}
+   				.transitionDuration(500)
+   				.renderVerticalGridLines(true)
+   				.x(d3.scaleLinear())
+   				.x(d3.scaleTime().range([parseDate('2015-5-1 0:43:28'), parseDate('2016-5-31 23:56:6')])) // scale and domain of the graph
+   		
+
+				let timelineChartDaily = dc.lineChart("#dc-timeline-chart-daily");
+  				 timelineChartDaily.height(300)
+    			.margins({top: 10, right: 50, bottom: 20, left: 50})
+    			.dimension(volumeByDay)								// the values across the x axis
+   				.group(volumeByDayGroup)	
+   				.elasticX(true)
+   				.elasticY(true)
+   				.transitionDuration(500)
+   				.renderVerticalGridLines(true)
+   				.x(d3.scaleLinear())
+   				.xAxis().ticks(7).tickFormat(
+        			function (data, index) { return days[index]; }); //use the index for cycle throu the support array (days)
+   			
 
 
-   				//Alternate DC chart for complete timespan view
-
-
-    			/*
-   				.linearColors(['darkblue'])							// the values on the y axis
-				.transitionDuration(500)
-				.label(function (d){
-    	 			return formatVehicleType(d.key);
-    			});
-    			*/	
-  				
-  				/*
-  				timelineChart.width(960)
-    			.height(100)
-    			.margins({top: 10, right: 10, bottom: 20, left: 40})
-    			.dimension(dateTime)
-    			.group(dates);
-				//.x(d3.scaleTime().domain([parseDate('2015-5-1 0:43:28'), parseDate('2016-5-31 23:56:6')])) // scale and domain of the graph
-    			//.xAxis();
-					
-				*/
 				dc.renderAll();
+				$("#dc-timeline-chart-daily").attr("style", "display: none"); // hide after rendered
+
  		    	
     		};
 		
