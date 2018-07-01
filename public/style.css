@@ -7,55 +7,87 @@
 }
 */
 
+.node {
+  font: 10px sans-serif;
+}
 
-/* Cool responsive SVG
+.link {
+  stroke: steelblue;
+  stroke-opacity: 0.5;
+  fill: none;
+  pointer-events: none;
+}
+
+/*
+body{
+  background-color:#253746;
+  color:white;
+}
+*/
+
+
+li{
+   margin: 5px 20px 0px 20px;
+    display: inline;
+}
+
+/* responsive SVG
 */
 .svg-container-small {
-      border:1px solid black;
+    
     border-radius:5px;
     display: inline-block;
     border-radius:5px;
     position: relative;
     width: 35%;
-     padding-top: 15px;
-    padding-bottom: 15px; /* aspect ratio */ 
+     padding-top: 25px;
+    padding-bottom: 25px; /* aspect ratio */ 
+        padding-left:35px;
+    padding-right:35px;
     vertical-align: top;
     overflow: hidden;
 }
 
 .svg-container-half {
-    border:1px solid black;
+  
     border-radius:5px;
     display: inline-block;
     position: relative;
     width: 50%;
-    padding-top: 15px;
-    padding-bottom: 15px; /* aspect ratio */
+    padding-top: 25px;
+    padding-bottom: 25px; /* aspect ratio */
+        padding-left:35px;
+    padding-right:35px;
     vertical-align: top;
     overflow: hidden;
 }
 
 
 .svg-container-medium {
-    border:1px solid black;
+    /*border:1px solid black;*/
+    
     border-radius:5px;
     display: inline-block;
     position: relative;
     width: 65%;
-     padding-top: 15px;
-    padding-bottom: 15px; /* aspect ratio */
+     padding-top: 25px;
+    padding-bottom: 25px; /* aspect ratio */
+        padding-left:35px;
+    padding-right:35px;
     vertical-align: top;
     overflow: hidden;
 }
 
 .svg-container-large {
-    border:1px solid black;
+
     border-radius:5px;
     display: inline-block;
     position: relative;
     width: 100%;
-     padding-top: 15px;
-    padding-bottom: 15px; /* aspect ratio */
+     padding-top: 25px;
+    padding-bottom: 25px; /* aspect ratio */
+    padding-left:35px;
+    padding-right:35px;
     vertical-align: top;
     overflow: hidden;
 }
@@ -181,11 +213,10 @@
   float:left;
 }
 
-body {
- background-color: #808D8D;
- 
+.tick{
+  color:white;
+  fill:white;
 }
-
 p {
   line-height: 2;
   padding-left:20px;

@@ -5,20 +5,16 @@
  */
 
 //.reverse!
-let showTotal=true;
 
 function toggleTotal(){
-
-		
-  $("#dc-timeline-chart-daily").attr("style", "display: none");
-  $("#dc-timeline-chart-full").attr("style", "display: block");
-	}
+	$("#dc-timeline-chart-daily").attr("style", "display: none");
+  	$("#dc-timeline-chart-full").attr("style", "display: block");
+}
 
 function toggleDaily(){
-
-		$("#dc-timeline-chart-full").attr("style", "display: none");
-		$("#dc-timeline-chart-daily").attr("style", "display: block");
-	}
+	$("#dc-timeline-chart-full").attr("style", "display: none");
+	$("#dc-timeline-chart-daily").attr("style", "display: block");
+}
 
 
 function chartsApp(){
@@ -104,71 +100,66 @@ function chartsApp(){
 		console.log(d)
 	}
 
-		
 	
 	function me(selection){
+		//let urlSensor = 'http://localhost:3000/sensors/';
+		//let sensorData=fetch(urlSensor).then((resp) => resp.json());
 		
+			let values=selection.datum();
+			//Prepare data fetched from server 		   			
+			values.shift(); // Just remove heading
+			let parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S"); //set dateTime format
 
-		let urlSensor = 'http://localhost:3000/sensors/';
-		let sensorData=fetch(urlSensor).then((resp) => resp.json());
-		
-				let values=selection.datum();
-				/* Prepare data fetched from server 		   
-				*/
-				values.shift(); // Just remove heading
-				let parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S"); //set dateTime format
-
-				// Crossfilter dimentioning and grouping
- 		    	//
- 		    	let crossings  = crossfilter(values);	
+			// Crossfilter dimentioning and grouping
+ 		    //
+ 		    let crossings  = crossfilter(values);	
 		   			
- 		    	// id dimention and group
-      			id = crossings.dimension(function(d) { return d.id; }),
-      			ids = id.group(),
+ 		    // id dimention and group
+      		id = crossings.dimension(function(d) { return d.id; }),
+      		ids = id.group(),
       			
-      			//vehicle type dimention and group
-      			vehicleType = crossings.dimension(function(d) {
-      				return d.type;
-      			});
-      			vehicleTypes = vehicleType.group();
+      		//vehicle type dimention and group
+      		vehicleType = crossings.dimension(function(d) {
+      			return d.type;
+      		});
+      		vehicleTypes = vehicleType.group();
 
-      			//gate dimention and group
-      			gate = crossings.dimension(function(d) {
-      				return d.gate;
-      			});
-      			gates = gate.group();
+     		//gate dimention and group
+      		gate = crossings.dimension(function(d) {
+      			return d.gate;
+      		});
+      		gates = gate.group();
 
-      			//gates grouped by type, basing on the first part of name
-      			gateType=crossings.dimension(function(d){
-      				let nameInitial=checkNameStart(d.gate);
-      				return nameInitial;
-      			});       			
-      			gateTypes=gateType.group();
+      		//gates grouped by type, basing on the first part of name
+      		gateType=crossings.dimension(function(d){
+      			let nameInitial=checkNameStart(d.gate);
+      			return nameInitial;
+     		});       			
+      		gateTypes=gateType.group();
 
-				 // week dimenstion and group
-  				let volumeByWeek = crossings.dimension(function(d) {
-    				return d3.timeWeek(parseDate(d.timestamp));
-  				});
+			// week dimenstion and group
+  			let volumeByWeek = crossings.dimension(function(d) {
+    			return d3.timeWeek(parseDate(d.timestamp));
+  			});
 
-  				// map/reduce to group sum
-  				let volumeByWeekGroup = volumeByWeek.group()
-    			.reduceCount(function(d) { return parseDate(d.timestamp); });	
+  			// map/reduce to group sum
+  			let volumeByWeekGroup = volumeByWeek.group()
+    		.reduceCount(function(d) { return parseDate(d.timestamp); });	
 
-    			 // Group data by week day
-  				let volumeByDay = crossings.dimension(function(d) {
- 					let parsedDate = d3.timeDay(parseDate(d.timestamp));
-    				return parsedDate.getDay();
-  				});
+    		// Group data by week day
+  			let volumeByDay = crossings.dimension(function(d) {
+ 				let parsedDate = d3.timeDay(parseDate(d.timestamp));
+    			return parsedDate.getDay();
+  			});
 
 
-  				// map/reduce to group sum (how much traffic on each mondays, thuesdays...)
-  				let volumeByDayGroup = volumeByDay.group()
-    			.reduceCount(function(d) { return (parseDate(d.timestamp)); });
+  			// map/reduce to group sum (how much traffic on each mondays, thuesdays...)
+  			let volumeByDayGroup = volumeByDay.group()
+    		.reduceCount(function(d) { return (parseDate(d.timestamp)); });
     			
 
-
-				// DC chart for single gates
-				//
+			// DC chart for single gates
+			//
 				let gatesContainer=selection.append("span")
 				.attr("id","dc-gates-chart")
 				.attr("class", "svg-container-large")
@@ -191,13 +182,14 @@ function chartsApp(){
     			.elasticX(true);
 				*/		
 				let gatesChart = dc.barChart("#dc-gates-chart");
- 			   	gatesChart.height(300)
+ 			   	gatesChart.height(250)
      			.margins({top: 10, right: 10, bottom: 20, left: 40})
      			.dimension(gate)								// the values across the x axis
      			.group(gates)							// the values on the y axis
 	 			.transitionDuration(500)
      			.centerBar(true)	
      			.elasticY(true)
+     			.renderHorizontalGridLines(true)
      			.ordinalColors(['orange','green','red', 'cyan', 'purple', 'yellow'])
      			.colorAccessor(function(d){ 
      				let name=checkNameStart(d.key);
@@ -244,7 +236,7 @@ function chartsApp(){
 				
       			let vehiclesChart = dc.rowChart("#dc-vehicles-chart");
 		        vehiclesChart.elasticX(true)
-    			.height(300)
+    			.height(250)
     			.margins({top: 10, right: 10, bottom: 20, left: 40})
     			.dimension(vehicleType)								// the values across the x axis
     			.group(vehicleTypes)
@@ -265,7 +257,7 @@ function chartsApp(){
 								
 
 				let timelineChartFull = dc.lineChart("#dc-timeline-chart-full");
-  				 timelineChartFull.height(300)
+  				 timelineChartFull.height(250)
     			.margins({top: 10, right: 10, bottom: 20, left: 40})
     			.dimension(volumeByWeek)		
 					// the values across the x axis
@@ -279,7 +271,7 @@ function chartsApp(){
    		
 
 				let timelineChartDaily = dc.lineChart("#dc-timeline-chart-daily");
-  				 timelineChartDaily.height(300)
+  				 timelineChartDaily.height(250)
     			.margins({top: 10, right: 50, bottom: 20, left: 50})
     			.dimension(volumeByDay)								// the values across the x axis
    				.group(volumeByDayGroup)	

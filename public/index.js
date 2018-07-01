@@ -66,15 +66,15 @@ function app(){
 			*/
 
 			
-			let staticViz = selection
-				.datum(points)
+			let mapViz = selection
+				.datum(sensors)
 				.call(map);
 			
-			//mettere switch per far vedere components singoli sensor o path!
+			/*
 			let dinamicGraphs = selection //come passo la possibilità di cambiare?
 				.datum(sensors)
 				.call(charts);
-
+			*/
 	
 
 		}
