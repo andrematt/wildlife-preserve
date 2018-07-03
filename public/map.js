@@ -8,7 +8,8 @@
 
 
 function mapApp(){
-	const padding=0;
+	const padding=80;
+	const leftMargin=50;
 	//const sensorNames=["","camping0","camping1","camping2","camping3","camping4","camping5","camping6","camping7","camping8","entrance0","entrance1","entrance2","entrance3","entrance4","gate0" ,"gate1" ,"gate2", "gate3","gate4","gate5","gate6","gate7","gate8","general-gate0","general-gate1","general-gate2","general-gate3","general-gate4","general-gate5","general-gate6","general-gate7", "ranger-base","ranger-stop0","ranger-stop1","ranger-stop2","ranger-stop3","ranger-stop4","ranger-stop5","ranger-stop6","ranger-stop7"];
 	const originalSize=982;
 	const pointsData={'camping0':[259, 206],'camping1':[634,250], 'camping2':[219,318], 'camping3':[225,338], 'camping4':[240,440], 'camping5':[103,595], 'camping6':[735,868], 'camping7':[888,712], 'camping8':[898,240], 'entrance0':[309,69], 'entrance1':[89,331],'entrance2':[898,430], 'entrance3':[567,819], 'entrance4':[688,902], 'gate0':[312,166], 'gate1':[289,222], 'gate2':[123,269],'gate3':[731,298],'gate4':[806,561],'gate5':[645,717],'gate6':[572,741],'gate7':[479,786],'gate8':[678,887],'general-gate0':[543,50],'general-gate1':[318,128],'general-gate2':[512,162],'general-gate3':[912,273],'general-gate4':[342,482],'general-gate5':[610,546],'general-gate6':[668,673],'general-gate7':[322,707],'ranger-base':[629,857],'ranger-stop0':[440,85],'ranger-stop1':[99,122],'ranger-stop2':[396,176],'ranger-stop3':[726,225],'ranger-stop4':[95,470],'ranger-stop5':[740,582],'ranger-stop6':[605,721], 'ranger-stop7':[493,746]};
@@ -67,8 +68,7 @@ function remove_empty_bins(source_group) {
 	}
 
 	function resize(n, width){
-		console.log(n);
-		return n*width/originalSize;
+		return n*(width-padding)/originalSize;
 	}
 	
 
@@ -220,11 +220,16 @@ let resultMatrix=[];
 				let linkTo = d.path[i+1].gate;
 				let vehicleType = d.vehicleType;
 				let vehicleId=d.vehicleId;
-				resultMatrix.push({'name':name, 'id':vehicleId, 'timeStamp':timeStamp, 'linkTo':linkTo, 'vehicleType':vehicleType});
+				let pathLength=d.path.length;
+				let start=d.path[0].time;
+				let end=d.path[d.path.length-1].time;
+
+				resultMatrix.push({'name':name, 'id':vehicleId, 'start':start, 'end':end, 'pathLength':pathLength, 'timeStamp':timeStamp, 'linkTo':linkTo, 'vehicleType':vehicleType});
 				//singleResult.data.push({name:name, 'linkTo':linkTo, 'vehicleType':vehicleType}); // push them in the 'data' array of the 'original' gate 
 			
 		}	
-		resultMatrix.push({'name':d.path[counter+1].gate, 'id':d.vehicleId, 'timeStamp':d.path[counter+1].time,  'linkTo':'other', 'vehicleType':d.vehicleType}); //if is the last element in the path array we don't know where it's destination
+
+		resultMatrix.push({'name':d.path[counter+1].gate, 'id':d.vehicleId, 'start':d.path[0].time, 'end':d.path[d.path.length-1].time, 'pathLength':d.path.length, 'timeStamp':d.path[counter+1].time,  'linkTo':'other', 'vehicleType':d.vehicleType}); //if is the last element in the path array we don't know where it's destination
 		//});
 	//}
 	});
@@ -235,10 +240,10 @@ return resultMatrix;
 
 		
 	function me(selection){
-		//let points=['camping0', 'camping1', 'camping2', 'camping3', 'camping4', 'camping5', 'camping6', 'camping7', 'camping8', 'entrance0', 'entrance1','entrance2', 'entrance3', 'entrance4', 'gate0', 'gate1', 'gate2', 'gate3', 'gate4', 'gate5', 'gate6', 'gate7', 'gate8', 'general-gate0', 'general-gate1', 'general-gate2', 'general-gate3', 'general-gate4', 'general-gate5', 'general-gate6', 'general-gate7', 'ranger-base', 'ranger-stop0', 'ranger-stop1', 'ranger-stop2', 'ranger-stop3', 'ranger-stop4', 'ranger-stop5', 'ranger-stop6', 'ranger-stop7']; 
-		//let pointNames=[];
-		//let sensors;	
-		//const urlPoints="data/points.csv";
+
+
+			// Data setup
+			//
 	
 			let values=selection.datum();
     		values.shift(); // Just remove heading
@@ -251,80 +256,11 @@ return resultMatrix;
    			let gatesData = crossfilter(pointMatrix);
 			let parseDate = d3.timeParse("%Y-%m-%d %H:%M:%S"); //set dateTime format
 
-			//Creation of the containing SVG element for the static minimap
-			//
-				/*
-				let radioDiv=selection.append("span")
-				.attr("id","dc-button-chart")
-				.attr("class", "svg-container-large");
-				*/
+		
 
-				let nodesDiv=selection.append("span")
-				.attr("id", "overlay")
-				.attr("class", "svg-container-medium")
-				.html("<h4>Lekagul Park Roadways </h4>");
-
-				let containerWidth=nodesDiv.node().getBoundingClientRect().width; //takes the width of the responsive div
-				console.log(containerWidth);
-				nodesDiv.append("svg")
-					.attr("width", containerWidth)
-					.attr("height", containerWidth)
-					.attr("id", "map")
-					.append("defs")
-					.append("pattern")
-					.attr("id", "img1")
-					.attr("patternUnits", "userSpaceOnUse")
-					.attr("width", containerWidth)
-					.attr("height", containerWidth)
-					.append("image")
-					.attr('href', "public/output.svg")
-					.attr("x", 0)
-					.attr("y", 0)
-					.attr("width", containerWidth)
-					.attr("height", containerWidth)
-					.append('svg');
-
-				 svg = d3.select("#map")
-     			.append("rect")
-     			.attr("width", '100%')
-     			.attr("height", '100%')
-    			 .attr("fill", "url(#img1)");
-
-
-				
+			// Crossfilter dimentioning and grouping
+			//		
  
-
-				
-
-
-				/*
-				let containerWidth=nodesDiv.node().getBoundingClientRect().width; //takes the width of the responsive div
-				let nodeSelection=nodesDiv.append("svg")
-				.attr('height',800)
-				.attr('width', containerWidth);
-				*/
-				
-
-				/*
-				//gate dimention and group
-      			let gateDimension = gatesData.dimension(function(d){
-   					 return d.name;
-				});
-				
-				let gateGroup = gateDimension.group().reduceSum(function(d){ //qua
-    				return d.val;
-				});
-
-				//gate dimention and group
-      			let linkDimension = gatesData.dimension(function(d){
-   					 return d.linkTo;
-				});
-				
-				let linkGroup = linkDimension.group().reduceSum(function(d){ //qua
-    				return d.val;
-				});
-				*/
-
 				//gate dimention and group
       			let gateDimension = gatesData.dimension(function(d){ //links in uscita
    					 return d.name;
@@ -333,6 +269,20 @@ return resultMatrix;
 				let gateGroup = gateDimension.group().reduceCount(function(d){ //qua
     				return d.name;
 				});
+
+				//gate dimention and group
+      			let pathDimension = gatesData.dimension(function(d){ 
+   					 
+   					 return d.pathLength;
+				});
+				
+				let pathGroup = pathDimension.group().reduceCount(function(d){ 
+    				
+    				return d.pathLength;
+				
+				});
+				console.log(pathGroup.all());
+
 
 								
 				//linkTo dimention and group
@@ -371,19 +321,57 @@ return resultMatrix;
     		.reduceCount(function(d) { return (parseDate(d.timeStamp)); });
 				
 			
-			/*
-			let vehicleCheckbox = dc.cboxMenu('#dc-button-chart');
-			vehicleCheckbox
-				.dimension(vehicleDimension)
-      			.group(vehicleDimension.group())
-   			    .controlsUseVisibility(true)
-				.multiple(true);
-			*/
 
+			// Graphs and containing html structure
+			//
+				let introDiv=selection.append("span")
+				.attr("id","nodes-chart-info")
+				.attr("class", "svg-container-large")
+				.html("<h3>Introducing the dashboard</h3>  <p> This project is built for help Mitch Vogel to investigate the possibile causes of the decrease in the number of nesting pairs of the Rose-Crested Blue Pipit in the the Boonsong Lekagul Nature Preserve, throu the analisys of the park vehicle traffic recorded by sensors. </p><p>To get more information out of data, the single sensor informations are grouped in paths, basing on the ID of the vehicle and the enter and exit gate.</p> <p> You can explore the data yourself, or look in the 'results' section to get an idea about the strange patterns that emerged during the analysis. ");
+   		
+ 
+			// Container for svg map and bubble overlay
+			//
+
+				let nodesDiv=selection.append("span")
+				.attr("id", "overlay")
+				.attr("class", "svg-container-medium")
+				.html("<h4>Lekagul Park Roadways </h4><p>The map represent the allowed routes throu the park, and the points of interest in which a sensor is present. Click on a point for the distribution of traffic outgoing from that point</p>");
+
+				let containerWidth=nodesDiv.node().getBoundingClientRect().width; //takes the width of the responsive div
+				console.log(containerWidth);
+				nodesDiv.append("svg")
+					.attr("width", containerWidth-padding)
+					.attr("height", containerWidth-padding)
+					.attr("id", "map")
+					.append("defs")
+					.append("pattern")
+					.attr("id", "img1")
+					.attr("patternUnits", "userSpaceOnUse")
+					.attr("width", containerWidth-padding)
+					.attr("height", containerWidth-padding)
+					.append("image")
+					.attr('href', "public/output.svg")
+					.attr("x", 0)
+					.attr("y", 0)
+					.attr("width", containerWidth-padding)
+					.attr("height", containerWidth-padding)
+					.append('svg');
+
+				 svg = d3.select("#map")
+     			.append("rect")
+     			.attr("width", '100%')
+     			.attr("height", '100%')
+    			 .attr("fill", "url(#img1)");
+
+
+
+    		// DC graph: bubble overlay
+    		//
    	let overlayChart=dc.bubbleOverlay('#overlay')
    			         .svg(d3.select("#overlay svg"));
-       overlayChart.width(containerWidth)
-                .height(containerWidth)
+       overlayChart.width(containerWidth-padding)
+                .height(containerWidth-padding)
                 .dimension(gateDimension)
                 .group(gateGroup)
                 .radiusValueAccessor(function(p) {
@@ -441,26 +429,24 @@ return resultMatrix;
                 .debug(false);
 
 
-                	/*
-   			     	var vehiclePieChart = dc.pieChart('#pieVehicleDiv');
-      			vehiclePieChart
-   					.width(400)
-   					.height(400)
-   					.dimension(vehicleDimension)
-   					.group(vehicleDimension.group());
-					*/
+                // Container div for linkTo chart
+                //
 
 				let linkToDiv=selection.append("span")
 				.attr("id","linkTo-chart")
 				.attr("class", "svg-container-small")
-				.html("<h4>Links To</h4>");	
+				.html("<h4>Links To</h4><p> Bars represent number of links (gate crossings) from the highlighted point(s) on map towards each reached point. 'Other' means that link points outside the camp, or that the path is not end yet (eg. vehicle is still in camping) ");	
 
 				let smallContainerWidth=linkToDiv.node().getBoundingClientRect().width; //takes the width of the responsive div
-				   		
+				
+
+				// Dc rowchart: LinkTo chart
+				//
    				var linkChart = dc.rowChart('#linkTo-chart');
       			linkChart
       			.elasticX(true)
-   					.height(containerWidth)
+      				.width(smallContainerWidth-padding/2)
+   					.height(containerWidth-padding)
    					.dimension(linkDimension)
    					.group(filtered_linkGroup)	
      				//.ordinalColors(['orange','green','red', 'cyan', 'purple', 'yellow', 'blue'])
@@ -470,126 +456,100 @@ return resultMatrix;
      					
      				let name=checkNameStart(d.key);
      				return name;
-     				/*
-     				console.log(name);
-     				if(name=='ranger-stop'){
-						return ("yellow");
-					}
-					else if (name=='entrance'){
-						return ("green");
-					}
-					else if(name=='general-gate'){
-						return("cyan");
-					}
-					else if(name=='gate'){
-						return("red");
-					}
-					else if(name=='camping'){
-						return ("green");
-					}
-					else if(name=='ranger-base'){
-						return ("purple");
-					}
-					else if(name=='other'){
-						return ("blue");
-					}
-					*/
+    
      			});
    			
 					
-
-				/*	  				
-  
-   				    			//Container for full timeline and grouped by day timeline
-          //
-          	
-          	let gatesChart = dc.barChart("#dc-gates-chart");
- 			   	gatesChart.height(250)
-     			.margins({top: 10, right: 10, bottom: 20, left: 40})
-     			.dimension(gate)								// the values across the x axis
-     			.group(gates)							// the values on the y axis
-	 			.transitionDuration(500)
-     			.centerBar(true)	
-     			.elasticY(true)
-     			.renderHorizontalGridLines(true)
-     			.ordinalColors(['orange','green','red', 'cyan', 'purple', 'yellow'])
-     			.colorAccessor(function(d){ 
-     				let name=checkNameStart(d.key);
-     				if(name==='ranger-stop'){
-						return ("a");
-					}
-					else if (name==='entrance'){
-						return ("b");
-					}
-					else if(name==='general-gate'){
-						return("c");
-					}
-					else if(name==='gate'){
-						return("d");
-					}
-					else if(name==='camping'){
-						return ("e");
-					}
-					else if(name==='ranger-base'){
-						return ("f");
-					}
-     			})
-     			.x(d3.scaleOrdinal().domain(sensorNames)) // Need empty val to offset first value
-				.xUnits(dc.units.ordinal)
-				.xAxis()
-				.tickFormat(function(v) {
-					return ("");
-				})
-				*/
-				
+     			// Container for timeline
+				//
 
     			let timedataContainer=selection.append("div")
 				.attr("id","dc-timeline-chart-container")
 				.attr("class", "svg-container-medium") //appends container div for full and daily charts
-				.attr("height",smallContainerWidth)
-				.html("<h4>Timeline</h4><p><button onclick=toggleTotal()>global view</button><button onclick=toggleDaily()>daily view</button></p><div class='chart svg-container-large' id='dc-timeline-chart-full'></div><div class='chart svg-container-large' id='dc-timeline-chart-daily' style='display:block'></div>");
-								
-
+			   
+				.html("<h4>Timeline</h4><p>Global and daily trends of gate crossings </p><p><button onclick=toggleTotal()>global view</button><button onclick=toggleDaily()>daily view</button></p><div id='dc-timeline-chart-full'></div><div id='dc-timeline-chart-daily' style='display:block'></div>");						
+				// DC linechart graph
+				//
 				let timelineChartFull = dc.lineChart("#dc-timeline-chart-full");
-  				 timelineChartFull.height(250)
-    			.margins({top: 10, right: 10, bottom: 20, left: 40})
+  				 timelineChartFull.height(smallContainerWidth-padding*2.5)
+  				 .width(containerWidth-padding/2)
+
+    			//.margins({top: 10, right: 10, bottom: 20, left: 40})
     			.dimension(volumeByWeek)		
+    			.yAxisLabel([""], 30)
 					// the values across the x axis
    				.group(volumeByWeekGroup)
    				.elasticX(true)
    				.elasticY(true)
    				.transitionDuration(500)
    				.renderVerticalGridLines(true)
+   				   .renderHorizontalGridLines(true)
    				.x(d3.scaleLinear())
    				.x(d3.scaleTime().range([parseDate('2015-5-1 0:43:28'), parseDate('2016-5-31 23:56:6')])) // scale and domain of the graph
    		
 
 				let timelineChartDaily = dc.lineChart("#dc-timeline-chart-daily");
-  				 timelineChartDaily.height(250)
-  				 .margins({top: 10, right: 50, bottom: 20, left: 50})
+  				 timelineChartDaily.height(smallContainerWidth-padding*2.5)
+  				 .width(containerWidth-padding/2)
+  				 //.margins({top: 10, right: 50, bottom: 20, left: 50})
     			.dimension(volumeByDay)								// the values across the x axis
    				.group(volumeByDayGroup)	
+   				.yAxisLabel([""], 30)
    				.elasticX(true)
    				.elasticY(true)
    				.transitionDuration(500)
    				.renderVerticalGridLines(true)
+   				   .renderHorizontalGridLines(true)
    				.x(d3.scaleLinear())
    				.xAxis().ticks(7).tickFormat(
         			function (data, index) { return days[index]; }); //use the index for cycle throu the support array (days)
 
 
+   				// Container for vehicle chart
+   				//
+
 				let vehicleDiv=selection.append("span")
 				.attr("id","vehicle-chart")
 				.attr("class", "svg-container-small")
-				.attr("height",smallContainerWidth)
-				.html("<h4>Vehicle Type</h4>");
+				.html("<h4>Vehicle Type</h4><p> Vehicle type grouped by gate crossings.");
 
+				// DC pie Chart
+				//
 				let vehicleChart = dc.pieChart("#vehicle-chart")
-				.height(300)
+				.height(smallContainerWidth-padding*2)
+				.width(smallContainerWidth-padding*2)
     			.dimension(vehicleDimension)
       			.group(vehicleDimension.group());	
- 
 
+      			// Container for path lenght distribution 
+      			//
+      			let pathDiv=selection.append("span")
+				.attr("id","path-chart")
+				.attr("class", "svg-container-medium")
+				.html("<h4>Path Lenght Distribution</h4><p> Number of gate crossings by path length. On tooltip, gate crossings grouped by path of belonging. If not all points on map are highlighted the result is the fraction of the paths passing for that point </p>");
+
+				// DC bar chart
+				//
+				let pathChart = dc.barChart("#path-chart")
+				.height(smallContainerWidth-padding*2.5)
+				.width(containerWidth-padding/2)
+					.dimension(pathDimension)
+
+      			.group(pathGroup)
+      			.yAxisLabel([""], 30)  //padding for long ticks
+      			.renderTitle(true)
+      			.title(function (p) { //it's called title, but it's a tooltip...
+            		return p.value+ ' on ' +p.value/p.key+' paths'; // 'clean' result if all points are highlighted, otherwise show the fraction of paths for that point
+        		})
+				.elasticY(true)
+				.renderHorizontalGridLines(true)
+				.renderVerticalGridLines(true)
+				.xUnits(dc.units.ordinal)  //used numbers as ordinal, because ...
+    		 	.x(d3.scaleOrdinal())    
+            	
+            	//.yAxis().tickFormat(function(v) {console.log(v); return v + '%';});	
+ 
+            	// Container for text description of results
 
    				let textDiv=selection.append("span")
 				.attr("id","nodes-chart-info")
@@ -598,7 +558,7 @@ return resultMatrix;
    		
 
 					dc.renderAll();
-				$("#dc-timeline-chart-daily").attr("style", "display: none"); // hide after rendered
+				$("#dc-timeline-chart-daily").attr("style", "display: none"); // hide the daily graph after rendered
 
 	}
 
