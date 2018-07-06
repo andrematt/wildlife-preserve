@@ -11,8 +11,6 @@ app.use('/dc', express.static(__dirname + '/node_modules/dc/'));
 app.use('/jquery', express.static(__dirname + '/node_modules/jquery/dist/'));
 app.use('/data', express.static(__dirname + '/data/'));
 app.use('/public', express.static(__dirname + '/public/'));
-//app.get('/', function(req, res){ //route handler "/" per quando viene aperto il sito
-//  res.sendFile(__dirname + '/index.html');
-//});
+
 
 app.listen(3001, () => console.log("running on port 3001"));
