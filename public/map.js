@@ -161,7 +161,6 @@ let resultMatrix=[];
 		let counter=0;
 		for(i = 0; i<d.path.length-1; i++){
 				counter=i;
-				//let singleResult=new Object();
 				let name = d.path[i].gate;
 				let timeStamp = d.path[i].time;
 				let linkTo = d.path[i+1].gate;
@@ -201,11 +200,11 @@ return resultMatrix;
 		//		
  		
  		//gate dimention and group
-      	let gateDimension = gatesData.dimension(function(d){ //links in uscita
+      	let gateDimension = gatesData.dimension(function(d){
    			 return d.name;
 		});
 				
-		let gateGroup = gateDimension.group().reduceCount(function(d){ //qua
+		let gateGroup = gateDimension.group().reduceCount(function(d){
     		return d.name;
 		});
 
@@ -345,7 +344,6 @@ return resultMatrix;
             .radiusValueAccessor(function(p) {
                 return 3; //set the same size for all
             })
-            //.r(d3.scaleLinear().domain([10, 100]))
             .colors(d3.scaleOrdinal().domain([0,1,2,3,4,5,6])
             .range(["#FFFF33","#91ca79","#73ccca","#c51d33","#bd693b","#51003f"]))
      		.colorAccessor(function(d){ 
@@ -581,9 +579,7 @@ return resultMatrix;
 				.renderHorizontalGridLines(true)
 				.renderVerticalGridLines(true)
 				.xUnits(dc.units.ordinal)  //used numbers as ordinal, because in this way the actual values are better visible
-    		 	.x(d3.scaleOrdinal())
-    		 	//.x(d3.scaleLinear().domain([0,75]))    
-    		 	
+    		 	.x(d3.scaleOrdinal())    		 	
 
     		 	// DC bar chart for path duration
 				//
