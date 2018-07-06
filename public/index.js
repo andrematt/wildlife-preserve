@@ -14,8 +14,6 @@ function app(){
 	//
 	function me(selection){
 
-		console.log('selction',selection.node());
-
 		// Fetch data
 		//
 		let points=[];
@@ -23,20 +21,19 @@ function app(){
 		let sensors;	
 		const urlPoints="data/points.csv"
 		const urlSensor = 'http://localhost:3000/sensors/';
-		let pointData=fetch(urlPoints).then((resp) => resp.json());
+		//let pointData=fetch(urlPoints).then((resp) => resp.json());
 		let sensorData=fetch(urlSensor).then((resp) => resp.json());
-		Promise.all([sensorData,pointData]).then(function(values){
-		if (values[0]&&values[1]) {
-			sensors=values[0]; 
-			values[1].forEach(function(val){
-				points.push(val);
-			});
-
-			
+		//Promise.all([sensorData,pointData]).then(function(values){
+		sensorData.then(function(values){
+		if (values){
+		//if (values[0]&&values[1]) {
+			//sensors=values[0]; 
+			//values[1].forEach(function(val){
+				//points.push(val);
+			//});			
 			let mapViz = selection
-				.datum(sensors)
+				.datum(values)
 				.call(map);
-
 
 		}
 		else {
